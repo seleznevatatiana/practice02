@@ -11,7 +11,7 @@ import java.sql.SQLException;
  */
 public class DBManager {
     /** ドライバクラス名 */
-    private static final String DRIVER = "PostgreSQL JDBC Driver";
+    private static final String DRIVER = "org.postgresql.Driver";
 
     /** 接続するDBのURL */
     private static final String URL = "jdbc:postgresql://localhost:5432/omikujidb";

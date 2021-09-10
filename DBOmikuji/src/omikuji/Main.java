@@ -49,7 +49,7 @@ public class Main {
 
             //読み込みファイルのインスタンス生成
             //ファイル名を指定する
-            fi2 = new FileInputStream("src/omikuji02/fortuneWithBirthday.csv");
+            fi2 = new FileInputStream("src/omikuji/fortuneWithBirthday.csv");
             is2 = new InputStreamReader(fi2);
             br2 = new BufferedReader(is2);
 
@@ -77,7 +77,7 @@ public class Main {
 
                 //読み込みファイルのインスタンス生成
                 //ファイル名を指定する
-                fi = new FileInputStream("src/omikuji02/fortune.csv");
+                fi = new FileInputStream("src/omikuji/fortune.csv");
                 is = new InputStreamReader(fi);
                 br = new BufferedReader(is);
 
@@ -109,7 +109,7 @@ public class Main {
 
                 FileWriter fw = null;
 
-                File file = new File("src/omikuji02/fortuneWithBirthday.csv");
+                File file = new File("src/omikuji/fortuneWithBirthday.csv");
                 fw = new FileWriter(file, true);
 
                 StringBuilder sb = new StringBuilder();
