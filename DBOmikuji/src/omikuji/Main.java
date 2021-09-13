@@ -70,16 +70,17 @@ public class Main {
                 // lineをカンマで分割し、配列dataに設定
                 data2 = line2.split(",");
 
-                if (!data2[5].equals(birthday) && !data2[6].equals(uranaiDate))
+                if (!data2[6].equals(birthday) && !data2[7].equals(uranaiDate))
                     continue;
                 omikuji = getInstance(data2[0]);
                 //分割した文字を画面出力する
                 for (int i = 0; i < data2.length; i++) {
                     omikuji.setUnsei();
-                    omikuji.setId(data2[1]);
-                    omikuji.setNegaigoto(data2[2]);
-                    omikuji.setAkinai(data2[3]);
-                    omikuji.setGakumon(data2[4]);
+                    omikuji.setUnseiId(data2[1]);
+                    omikuji.setOmikujiId(data2[2]);
+                    omikuji.setNegaigoto(data2[3]);
+                    omikuji.setAkinai(data2[4]);
+                    omikuji.setGakumon(data2[5]);
 
                     // DBに接続
                     connection = DBManager.getConnection();
@@ -89,9 +90,9 @@ public class Main {
                     // ステートメントを作成
                     preparedStatement = connection.prepareStatement(sql2);
                     //入力値をバインド
-                    preparedStatement.setString(1, data2[6]);
-                    preparedStatement.setString(2, data2[5]);
-                    preparedStatement.setString(3, data2[1]);
+                    preparedStatement.setString(1, data2[7]);
+                    preparedStatement.setString(2, data2[6]);
+                    preparedStatement.setString(3, data2[2]);
                     // SQL文を実行
                     int cnt2 = preparedStatement.executeUpdate();
                 }
@@ -120,10 +121,11 @@ public class Main {
 
                     // 要素の追加
                     omikuji.setUnsei();
-                    omikuji.setId(data[1]);
-                    omikuji.setNegaigoto(data[2]);
-                    omikuji.setAkinai(data[3]);
-                    omikuji.setGakumon(data[4]);
+                    omikuji.setUnseiId(data[1]);
+                    omikuji.setOmikujiId(data[2]);
+                    omikuji.setNegaigoto(data[3]);
+                    omikuji.setAkinai(data[4]);
+                    omikuji.setGakumon(data[5]);
 
                     omikujiList.add(omikuji);
                     // DBに接続
@@ -134,11 +136,11 @@ public class Main {
                     // ステートメントを作成
                     preparedStatement = connection.prepareStatement(sql);
                     //入力値をバインド
-                    preparedStatement.setString(1, data[0]);
+                    preparedStatement.setString(1, data[2]);
                     preparedStatement.setString(2, data[1]);
-                    preparedStatement.setString(3, data[2]);
-                    preparedStatement.setString(4, data[3]);
-                    preparedStatement.setString(5, data[4]);
+                    preparedStatement.setString(3, data[3]);
+                    preparedStatement.setString(4, data[4]);
+                    preparedStatement.setString(5, data[5]);
                     // SQL文を実行
                     int cnt = preparedStatement.executeUpdate();
 
@@ -154,9 +156,11 @@ public class Main {
                 fw = new FileWriter(file, true);
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(omikuji.id);
+                sb.append(omikuji.unseiId);
                 sb.append(',');
                 sb.append(omikuji.unsei);
+                sb.append(',');
+                sb.append(omikuji.omikujiId);
                 sb.append(',');
                 sb.append(omikuji.negaigoto);
                 sb.append(',');

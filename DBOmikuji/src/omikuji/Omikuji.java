@@ -5,7 +5,8 @@ public abstract class Omikuji implements Fortune{
     protected String negaigoto;
     protected String akinai;
     protected String gakumon;
-    protected String id;
+    protected String unseiId;
+    protected String omikujiId;
     public abstract void setUnsei();
 
     protected String unsei;
@@ -34,10 +35,16 @@ public abstract class Omikuji implements Fortune{
         this.gakumon = gakumon;
     }
     /**
-     * @param omikiji_id セットする negaigoto
+     * @param unsei_id セットする negaigoto
      */
-    public void setId (String id) {
-        this.id = id;
+    public void setUnseiId (String unseiId) {
+        this.unseiId = unseiId;
+    }
+    /**
+     * @param omikuji_id セットする negaigoto
+     */
+    public void setOmikujiId (String omikujiId) {
+        this.omikujiId = omikujiId;
     }
 
     public String disp() {
