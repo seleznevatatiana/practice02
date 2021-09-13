@@ -72,11 +72,11 @@ public class Main {
 
                 if (!data2[5].equals(birthday) && !data2[6].equals(uranaiDate))
                     continue;
-                omikuji = getInstance(data2[1]);
+                omikuji = getInstance(data2[0]);
                 //分割した文字を画面出力する
                 for (int i = 0; i < data2.length; i++) {
-                    omikuji.setId(data2[0]);
                     omikuji.setUnsei();
+                    omikuji.setId(data2[1]);
                     omikuji.setNegaigoto(data2[2]);
                     omikuji.setAkinai(data2[3]);
                     omikuji.setGakumon(data2[4]);
@@ -91,7 +91,7 @@ public class Main {
                     //入力値をバインド
                     preparedStatement.setString(1, data2[6]);
                     preparedStatement.setString(2, data2[5]);
-                    preparedStatement.setString(3, data2[0]);
+                    preparedStatement.setString(3, data2[1]);
                     // SQL文を実行
                     int cnt2 = preparedStatement.executeUpdate();
                 }
@@ -116,11 +116,11 @@ public class Main {
                     // lineをカンマで分割し、配列dataに設定
                     data = line.split(",");
 
-                    omikuji = getInstance(data[1]);
+                    omikuji = getInstance(data[0]);
 
                     // 要素の追加
                     omikuji.setUnsei();
-                    omikuji.setId(data[0]);
+                    omikuji.setId(data[1]);
                     omikuji.setNegaigoto(data[2]);
                     omikuji.setAkinai(data[3]);
                     omikuji.setGakumon(data[4]);
