@@ -70,24 +70,30 @@ public class Main {
                 // lineをカンマで分割し、配列dataに設定
                 data2 = line2.split(",");
 
-                // DBに接続
-                connection = DBManager.getConnection();
-
-                // ステートメントを作成
-                preparedStatement = connection.prepareStatement(SQL_INSERT = "INSERT INTO `omikuji` (`negaigoto`, `akinai`, `gakumon`) VALUES ('" + data[1] + "','" + data[2] +  "','" + data[3] + "')";);
-
-                // SQL文を実行
-                resultSet = preparedStatement.executeQuery();
-
                 if (!data2[5].equals(birthday) && !data2[6].equals(uranaiDate))
                     continue;
                 omikuji = getInstance(data2[1]);
                 //分割した文字を画面出力する
                 for (int i = 0; i < data2.length; i++) {
+                    omikuji.setId(data2[0]);
                     omikuji.setUnsei();
                     omikuji.setNegaigoto(data2[2]);
                     omikuji.setAkinai(data2[3]);
                     omikuji.setGakumon(data2[4]);
+
+                    // DBに接続
+                    connection = DBManager.getConnection();
+
+                    //SQL文を準備
+                    String sql2 = "INSERT INTO result VALUES (?, ?, ?)";
+                    // ステートメントを作成
+                    preparedStatement = connection.prepareStatement(sql2);
+                    //入力値をバインド
+                    preparedStatement.setString(1, data2[6]);
+                    preparedStatement.setString(2, data2[5]);
+                    preparedStatement.setString(3, data2[0]);
+                    // SQL文を実行
+                    int cnt2 = preparedStatement.executeUpdate();
                 }
             }
             //誕生日か当日が同じの既存データがない場合
@@ -109,7 +115,6 @@ public class Main {
                 while ((line = br.readLine()) != null) {
                     // lineをカンマで分割し、配列dataに設定
                     data = line.split(",");
-//                    String insertSql = "INSERT INTO `omikuji` (`negaigoto`, `akinai`, `gakumon`) VALUES ('" + data[1] + "','" + data[2] +  "','" + data[3] + "')";
 
                     omikuji = getInstance(data[1]);
 
@@ -121,6 +126,22 @@ public class Main {
                     omikuji.setGakumon(data[4]);
 
                     omikujiList.add(omikuji);
+                    // DBに接続
+                    connection = DBManager.getConnection();
+
+                    //SQL文を準備
+                    String sql = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?)";
+                    // ステートメントを作成
+                    preparedStatement = connection.prepareStatement(sql);
+                    //入力値をバインド
+                    preparedStatement.setString(1, data[0]);
+                    preparedStatement.setString(2, data[1]);
+                    preparedStatement.setString(3, data[2]);
+                    preparedStatement.setString(4, data[3]);
+                    preparedStatement.setString(5, data[4]);
+                    // SQL文を実行
+                    int cnt = preparedStatement.executeUpdate();
+
                 }
 
                 //ランダム表示
