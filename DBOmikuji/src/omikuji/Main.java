@@ -128,9 +128,9 @@ public class Main {
                     omikuji.setGakumon(data[5]);
 
                     omikujiList.add(omikuji);
+
                     // DBに接続
                     connection = DBManager.getConnection();
-
                     //SQL文を準備
                     String sql = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?)";
                     // ステートメントを作成
@@ -145,6 +145,12 @@ public class Main {
                     int cnt = preparedStatement.executeUpdate();
 
                 }
+                // DBに接続
+                connection = DBManager.getConnection();
+                //SQL文を準備
+                String sql3 = "SELECT omikuji_id FROM omikuji ORDER BY random() LIMIT 1";
+                // ステートメントを作成
+                preparedStatement = connection.prepareStatement(sql3);
 
                 //ランダム表示
                 int num = new Random().nextInt(omikujiList.size());
