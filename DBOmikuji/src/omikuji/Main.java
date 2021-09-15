@@ -1,6 +1,5 @@
 package omikuji;
 
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,13 +7,14 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 
 import db.DBManager;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
 
         System.out.print("誕生日を入力してください：");
         //入力準備
@@ -40,46 +40,46 @@ public class Main {
         InputStreamReader is = null;
         BufferedReader br = null;
 
-        //ファイル読み込みで使用する３つのクラス
-        FileInputStream fi2 = null;
-        InputStreamReader is2 = null;
-        BufferedReader br2 = null;
-
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
 
         try {
 
-            //読み込みファイルのインスタンス生成
-            //ファイル名を指定する
-            fi2 = new FileInputStream("src/omikuji/fortuneWithBirthday.csv");
-            is2 = new InputStreamReader(fi2);
-            br2 = new BufferedReader(is2);
-
-            // readLineで一行ずつ読み込む
-            String line2; // 読み　込み行
-            String[] data2; // 分割後のデータを保持する配列
             Omikuji omikuji = null;
-            while ((line2 = br2.readLine()) != null) {
-                // lineをカンマで分割し、配列dataに設定
-                data2 = line2.split(",");
 
-                if (!data2[6].equals(birthday) && !data2[7].equals(uranaiDate))
-                    continue;
-                omikuji = getInstance(data2[0]);
-                //分割した文字を画面出力する
-                for (int i = 0; i < data2.length; i++) {
-                    omikuji.setUnsei();
-                    omikuji.setUnseiId(data2[1]);
-                    omikuji.setOmikujiId(data2[2]);
-                    omikuji.setNegaigoto(data2[3]);
-                    omikuji.setAkinai(data2[4]);
-                    omikuji.setGakumon(data2[5]);
-                }
-            }
-            //誕生日か当日が同じの既存データがない場合
-            if (omikuji == null) {
+            //            // readLineで一行ずつ読み込む
+            //            String line2; // 読み　込み行
+            //            String[] data2; // 分割後のデータを保持する配列
+            //            Omikuji omikuji = null;
+            //            while ((line2 = br2.readLine()) != null) {
+            //                // lineをカンマで分割し、配列dataに設定
+            //                data2 = line2.split(",");
+            //
+            //                if (!data2[6].equals(birthday) && !data2[7].equals(uranaiDate))
+            //                    continue;
+            //                omikuji = getInstance(data2[0]);
+            //                //分割した文字を画面出力する
+            //                for (int i = 0; i < data2.length; i++) {
+            //                    omikuji.setUnsei();
+            //                    omikuji.setUnseiId(data2[1]);
+            //                    omikuji.setOmikujiId(data2[2]);
+            //                    omikuji.setNegaigoto(data2[3]);
+            //                    omikuji.setAkinai(data2[4]);
+            //                    omikuji.setGakumon(data2[5]);
+            //                }
+            //            }
+
+            // DBに接続
+            connection = DBManager.getConnection();
+            //SQL文を準備
+            String sql = "SELECT * FROM omikuji";
+            // ステートメントを作成
+            preparedStatement = connection.prepareStatement(sql);
+            // SQL文を実行
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet == null) {
 
                 //読み込みファイルのインスタンス生成
                 //ファイル名を指定する
@@ -108,7 +108,7 @@ public class Main {
                     // DBに接続
                     connection = DBManager.getConnection();
                     //SQL文を準備
-                    String sql = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?)";
+                    String sql2 = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?)";
                     // ステートメントを作成
                     preparedStatement = connection.prepareStatement(sql);
                     //入力値をバインド
@@ -118,9 +118,13 @@ public class Main {
                     preparedStatement.setString(4, data[4]);
                     preparedStatement.setString(5, data[5]);
                     // SQL文を実行
-                    int cnt = preparedStatement.executeUpdate();
+                    int cnt2 = preparedStatement.executeUpdate();
                 }
 
+               } else {
+                   String omikujiId;
+                 // DBに接続
+                    connection = DBManager.getConnection();
                     //SQL文を準備
                     String sql3 = "SELECT *  FROM omikuji WHERE omikuji_id LIKE ? ORDER BY random() LIMIT 1";
                     // ステートメントを作成
@@ -130,51 +134,40 @@ public class Main {
                  // SQL文を実行
                    resultSet = preparedStatement.executeQuery();
 
-                   // DBに接続
-                   connection = DBManager.getConnection();
+                // DBに接続
+                connection = DBManager.getConnection();
 
-                   //SQL文を準備
-                   String sql2 = "INSERT INTO result VALUES (?, ?, ?)";
-                   // ステートメントを作成
-                   preparedStatement = connection.prepareStatement(sql2);
-//                   //入力値をバインド
-//                   preparedStatement.setString(1, uranaiDate);
-//                   preparedStatement.setString(2, birthday);
-//                   preparedStatement.setString(3, data2[2]);
-                   // SQL文を実行
-                   int cnt2 = preparedStatement.executeUpdate();
+                //SQL文を準備
+                String sql2 = "INSERT INTO result VALUES (?, ?, ?)";
+                // ステートメントを作成
+                preparedStatement = connection.prepareStatement(sql2);
+                //                   //入力値をバインド
+                //                   preparedStatement.setString(1, uranaiDate);
+                //                   preparedStatement.setString(2, birthday);
+                //                   preparedStatement.setString(3, data2[2]);
+                // SQL文を実行
+                int cnt2 = preparedStatement.executeUpdate();
 
+                //                //ランダム表示
+                //                int num = new Random().nextInt(omikujiList.size());
+                //                omikuji = omikujiList.get(num);
+
+                //結果を出力
+                System.out.println(omikuji.disp());
+                //            return;
                 }
+            }
 
-//                //ランダム表示
-//                int num = new Random().nextInt(omikujiList.size());
-//                omikuji = omikujiList.get(num);
-
-
-
-            //結果を出力
-            System.out.println(omikuji.disp());
-            //            return;
-
-        }
         catch (Exception e) {
             e.printStackTrace();
         }
         finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
                 // ResultSetをクローズ
                 DBManager.close(resultSet);
                 // Statementをクローズ
                 DBManager.close(preparedStatement);
                 // DBとの接続を切断
                 DBManager.close(connection);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
