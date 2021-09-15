@@ -51,26 +51,6 @@ public abstract class Omikuji implements Fortune{
         String disp;
         disp = String.format(DISP_STR, this.unsei);
 
-
-//        //properties読み込み
-//        Properties properties = new Properties();
-//        String file1 = "src/omikuji02/fortune.properties";
-//        String str = "";
-//
-//        try {
-//            FileInputStream fis = new FileInputStream(file1);
-//            try {
-//                properties.load(fis);
-//                String a = properties.getProperty("disp_str");
-//                str = String.format(a, this.unsei);
-
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
         //StringBuilderでコンソール表示する文字列を作る
           StringBuilder sb = new StringBuilder();
           sb.append(disp);
