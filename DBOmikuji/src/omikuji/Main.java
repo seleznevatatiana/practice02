@@ -107,7 +107,7 @@ public class Main {
                  // DBに接続
                     connection = DBManager.getConnection();
                     //SQL文を準備
-                    String sql3 = "SELECT *  FROM omikuji WHERE omikuji_id LIKE ? ORDER BY random() LIMIT 1";
+                    String sql3 = "SELECT unsei_name, negaigoto, akinai, gakumon FROM omikuji o INNER JOIN unseimaster u ON o.omikuji_id = u.omikuji_id ORDER BY random() LIMIT 1";
                     // ステートメントを作成
                     preparedStatement = connection.prepareStatement(sql3);
                     //入力値をバインド
