@@ -7,6 +7,11 @@ public abstract class Omikuji implements Fortune{
     protected String gakumon;
     protected String unseiId;
     protected String omikujiId;
+    protected String updater;
+    protected java.sql.Timestamp updatedDate;
+    protected String creator;
+    protected java.sql.Timestamp createdDate;
+
     public abstract void setUnsei();
 
     protected String unsei;
@@ -45,6 +50,54 @@ public abstract class Omikuji implements Fortune{
      */
     public void setOmikujiId (String omikujiId) {
         this.omikujiId = omikujiId;
+    }
+    /**
+     * @return updater
+     */
+    public String getUpdater() {
+        return updater;
+    }
+    /**
+     * @param updater セットする updater
+     */
+    public void setUpdater(String updater) {
+        this.updater = updater;
+    }
+    /**
+     * @return updatedDate
+     */
+    public java.sql.Timestamp getUpdatedDate() {
+        return updatedDate;
+    }
+    /**
+     * @param updatedDate セットする updatedDate
+     */
+    public void setUpdatedDate(java.sql.Timestamp updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+    /**
+     * @return creator
+     */
+    public String getCreator() {
+        return creator;
+    }
+    /**
+     * @param creator セットする creator
+     */
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+    /**
+     * @return createdDate
+     */
+    public java.sql.Timestamp getCreatedDate() {
+        return createdDate;
+    }
+    /**
+     * @param createdDate セットする createdDate
+     */
+    public void setCreatedDate(java.sql.Timestamp createdDate) {
+        this.createdDate = createdDate;
     }
 
     public String disp() {

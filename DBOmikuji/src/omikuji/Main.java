@@ -8,8 +8,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 import db.DBManager;
 
@@ -38,6 +40,15 @@ public class Main {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String uranaiDate = dateFormat.format(date);
 
+     // Timestampオブジェクト生成
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+
+        //omikuji_idで情報取得
+        //サブクエリ
+        // birthdayとuranai_dateでsql条件を書く
+        //SELECT u.unsei_name, o.negaigoto, o.akinai, o.gakumon  FROM omikuji o INNER JOIN unseimaster u ON o.unsei_id = u.unsei_id WHERE o.omikuji_id = (SELECT r.omikuji_id FROM result r INNER JOIN omikuji o ON r.omikuji_id = o.omikuji_id);
+
         //ファイル読み込みで使用する３つのクラス
         FileInputStream fi = null;
         InputStreamReader is = null;
@@ -59,8 +70,11 @@ public class Main {
             preparedStatement = connection.prepareStatement(sql);
             // SQL文を実行
             resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            // 行数を取得する。
+            int count = resultSet.getRow();
 
-            if (resultSet == null) {
+            if (count == 0) {
 
                 //読み込みファイルのインスタンス生成
                 //ファイル名を指定する
@@ -89,7 +103,7 @@ public class Main {
                     // DBに接続
                     connection = DBManager.getConnection();
                     //SQL文を準備
-                    String sql2 = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?)";
+                    String sql2 = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     // ステートメントを作成
                     preparedStatement = connection.prepareStatement(sql);
                     //入力値をバインド
@@ -98,40 +112,67 @@ public class Main {
                     preparedStatement.setString(3, data[3]);
                     preparedStatement.setString(4, data[4]);
                     preparedStatement.setString(5, data[5]);
+                    preparedStatement.setString(6, "タチアナ");
+                    preparedStatement.setTimestamp(7, timestamp);
+                    preparedStatement.setString(8, "タチアナ");
+                    preparedStatement.setTimestamp(9, timestamp);
+
                     // SQL文を実行
                     int cnt2 = preparedStatement.executeUpdate();
                 }
 
                } else {
-                   String omikujiId;
+                 //ランダム表示
+                   int num = new Random().nextInt(resultSet.getInt(sql));//やり方調べる（データ件数）stringに変換してからpreparedstatementにセット
+                   Integer i = Integer.valueOf(num);
+                   String str = i.toString();
+
                  // DBに接続
                     connection = DBManager.getConnection();
                     //SQL文を準備
-                    String sql3 = "SELECT unsei_name, negaigoto, akinai, gakumon FROM omikuji o INNER JOIN unseimaster u ON o.omikuji_id = u.omikuji_id ORDER BY random() LIMIT 1";
+                    String sql3 = "SELECT u.unsei_name, o.negaigoto, o.akinai, o.gakumon  FROM omikuji o INNER JOIN unseimaster u ON o.unsei_id = u.unsei_id WHERE o.omikuji_id = ?";
                     // ステートメントを作成
                     preparedStatement = connection.prepareStatement(sql3);
                     //入力値をバインド
-                    preparedStatement.setString(1, "%" + omikuji.omikujiId + "%" );
+                    preparedStatement.setString(1,  str);
                  // SQL文を実行
-                   resultSet = preparedStatement.executeQuery();
+                    ResultSet resultSet2 = null;
+                   resultSet2 = preparedStatement.executeQuery();
+
+                   //resultsetから値の取り出し方
+                   if(resultSet2.next()){
+                       omikuji = getInstance(resultSet2.getString("unsei_name"));
+                       omikuji.setUnsei();
+                       omikuji.omikujiId = resultSet2.getString("omikuji_id");
+                       omikuji.negaigoto = resultSet2.getString("negaigoto");
+                       omikuji.akinai = resultSet2.getString("akinai");
+                       omikuji.gakumon = resultSet2.getString("gakumon");
+                       omikuji.updater = resultSet2.getString("updater");
+                       omikuji.updatedDate = resultSet2.getTimestamp("updated_date");
+                       omikuji.creator = resultSet2.getString("creator");
+                       omikuji.createdDate = resultSet2.getTimestamp("created_date");
+                       }
+
 
                 // DBに接続
                 connection = DBManager.getConnection();
 
                 //SQL文を準備
-                String sql4 = "INSERT INTO result VALUES (?, ?, ?)";
+                String sql4 = "INSERT INTO result VALUES (?, ?, ?, ?, ?)";
                 // ステートメントを作成
                 preparedStatement = connection.prepareStatement(sql4);
                                    //入力値をバインド
                                    preparedStatement.setString(1, uranaiDate);
                                    preparedStatement.setString(2, birthday);
                                    preparedStatement.setString(3, omikuji.omikujiId);
+                                   preparedStatement.setString(4, omikuji.updater);
+                                   preparedStatement.setTimestamp(5, omikuji.updatedDate);
+                                   preparedStatement.setString(6, omikuji.creator);
+                                   preparedStatement.setTimestamp(7, omikuji.createdDate);
+                                   //タイムスタンプ→更新日と作成日(型を変える）
+                                   //更新者と作成者は私の名前
                 // SQL文を実行
                 int cnt4 = preparedStatement.executeUpdate();
-
-                //                //ランダム表示
-                //                int num = new Random().nextInt(omikujiList.size());
-                //                omikuji = omikujiList.get(num);
 
                 //結果を出力
                 System.out.println(omikuji.disp());
