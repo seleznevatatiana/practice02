@@ -11,22 +11,20 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
+import db.ConstantSQL;
 import db.DBManager;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, SQLException {
+    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
 
         System.out.print("誕生日を入力してください：");
         //入力準備
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         //入力値を読み込む
         String birthday = reader.readLine();
-        //      // 変換対象の日付文字列
-        //      SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        //      // Date型変換
-        //      Date birthday = sdf.parse(birthday1);
         boolean check;
         CheckBirthday checkBirthday = new CheckBirthday();
         check = checkBirthday.checkBirthday(birthday);
@@ -39,41 +37,71 @@ public class Main {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String uranaiDate = dateFormat.format(date);
 
-     // Timestampオブジェクト生成
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
+        // DBに接続
+        connection = DBManager.getConnection();
+        // ステートメントを作成
+        preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_FROM_RESULT);
+        //入力値をバインド
+        preparedStatement.setString(1, birthday);
+        preparedStatement.setString(2, uranaiDate);
+        // SQL文を実行
+        ResultSet rs = null;
+        rs = preparedStatement.executeQuery();
+        if (rs == null) {
+            System.out.println("rsがnullです");
+        }
+        String omikujiId = "";
 
-        //omikuji_idで情報取得
-        //サブクエリ
-        // birthdayとuranai_dateでsql条件を書く
-        //SELECT u.unsei_name, o.negaigoto, o.akinai, o.gakumon  FROM omikuji o INNER JOIN unseimaster u ON o.unsei_id = u.unsei_id WHERE o.omikuji_id = (SELECT r.omikuji_id FROM result r INNER JOIN omikuji o ON r.omikuji_id = o.omikuji_id);
+        while (rs.next()) {
+        omikujiId = rs.getString("omikuji_id");
+        }
+
+        Omikuji omikuji = null;
+
+        if (omikujiId != null) {
+
+            // ステートメントを作成
+            preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_FROM_OMIKUJI);
+            //入力値をバインド
+            preparedStatement.setString(1, omikujiId);
+            // SQL文を実行
+            ResultSet rs2 = null;
+            rs2 = preparedStatement.executeQuery();
+
+            //resultsetから値の取り出し方
+            while (rs2.next()) {
+                omikuji = getInstance(rs2.getString("unsei_name"));
+                omikuji.setUnsei();
+                omikuji.setOmikujiId(omikujiId);
+                omikuji.setNegaigoto(rs2.getString("negaigoto"));
+                omikuji.setAkinai(rs2.getString("akinai"));
+                omikuji.setGakumon(rs2.getString("gakumon"));
+            }
+        }
 
         //ファイル読み込みで使用する３つのクラス
         FileInputStream fi = null;
         InputStreamReader is = null;
         BufferedReader br = null;
 
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-
         try {
-
-            Omikuji omikuji = null;
 
             // DBに接続
             connection = DBManager.getConnection();
             //SQL文を準備
-            String sql = "SELECT COUNT (*) AS CNT FROM omikuji";
+            String cnt = "SELECT COUNT (*) AS CNT FROM omikuji";
             // ステートメントを作成
-            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement = connection.prepareStatement(cnt);
             // SQL文を実行
             resultSet = preparedStatement.executeQuery();
-            System.out.println("resultsetの中身：" + resultSet);
             resultSet.next();
-            System.out.println(resultSet.getInt("cnt"));
+            int count = resultSet.getInt("cnt");
 
-            if (resultSet.getInt("cnt") == 0) {
+            if (count == 0) {
 
                 //読み込みファイルのインスタンス生成
                 //ファイル名を指定する
@@ -99,12 +127,13 @@ public class Main {
                     omikuji.setAkinai(data[4]);
                     omikuji.setGakumon(data[5]);
 
+                    // Timestampオブジェクト生成
+                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
                     // DBに接続
                     connection = DBManager.getConnection();
-                    //SQL文を準備
-                    String sql2 = "INSERT INTO omikuji VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     // ステートメントを作成
-                    preparedStatement = connection.prepareStatement(sql);
+                    preparedStatement = connection.prepareStatement(ConstantSQL.SQL_ISERT_OMIKUJI);
                     //入力値をバインド
                     preparedStatement.setString(1, data[2]);
                     preparedStatement.setString(2, data[1]);
@@ -112,83 +141,78 @@ public class Main {
                     preparedStatement.setString(4, data[4]);
                     preparedStatement.setString(5, data[5]);
                     preparedStatement.setString(6, "タチアナ");
-                    preparedStatement.setTimestamp(7, timestamp);
-                    preparedStatement.setString(8, "タチアナ");
-                    preparedStatement.setTimestamp(9, timestamp);
+                    preparedStatement.setString(7, "タチアナ");
 
                     // SQL文を実行
                     int cnt2 = preparedStatement.executeUpdate();
                 }
+            }
+//            System.out.println("omikujiIdの中身：" + omikujiId);
+            if (omikujiId.isEmpty()) {
 
-//               } else {
-//                 //ランダム表示
-//                   int num = new Random().nextInt(resultSet.getInt("cnt"));
-//                   Integer i = Integer.valueOf(num);
-//                   String str = i.toString();
-//
-//                 // DBに接続
-//                    connection = DBManager.getConnection();
-//                    //SQL文を準備
-//                    String sql3 = "SELECT u.unsei_name, o.negaigoto, o.akinai, o.gakumon  FROM omikuji o INNER JOIN unseimaster u ON o.unsei_id = u.unsei_id WHERE o.omikuji_id = ?";
-//                    // ステートメントを作成
-//                    preparedStatement = connection.prepareStatement(sql3);
-//                    //入力値をバインド
-//                    preparedStatement.setString(1,  str);
-//                 // SQL文を実行
-//                    ResultSet resultSet2 = null;
-//                   resultSet2 = preparedStatement.executeQuery();
-//
-//                   //resultsetから値の取り出し方
-//                   if(resultSet2.next()){
-//                       omikuji = getInstance(resultSet2.getString("unsei_name"));
-//                       omikuji.setUnsei();
-//                       omikuji.omikujiId = resultSet2.getString("omikuji_id");
-//                       omikuji.negaigoto = resultSet2.getString("negaigoto");
-//                       omikuji.akinai = resultSet2.getString("akinai");
-//                       omikuji.gakumon = resultSet2.getString("gakumon");
-//                       omikuji.updater = resultSet2.getString("updater");
-//                       omikuji.updatedDate = resultSet2.getTimestamp("updated_date");
-//                       omikuji.creator = resultSet2.getString("creator");
-//                       omikuji.createdDate = resultSet2.getTimestamp("created_date");
-//                       }
-//
-//
-//                // DBに接続
-//                connection = DBManager.getConnection();
-//
-//                //SQL文を準備
-//                String sql4 = "INSERT INTO result VALUES (?, ?, ?, ?, ?)";
-//                // ステートメントを作成
-//                preparedStatement = connection.prepareStatement(sql4);
-//                                   //入力値をバインド
-//                                   preparedStatement.setString(1, uranaiDate);
-//                                   preparedStatement.setString(2, birthday);
-//                                   preparedStatement.setString(3, omikuji.omikujiId);
-//                                   preparedStatement.setString(4, omikuji.updater);
-//                                   preparedStatement.setTimestamp(5, omikuji.updatedDate);
-//                                   preparedStatement.setString(6, omikuji.creator);
-//                                   preparedStatement.setTimestamp(7, omikuji.createdDate);
-//                                   //タイムスタンプ→更新日と作成日(型を変える）
-//                                   //更新者と作成者は私の名前
-//                // SQL文を実行
-//                int cnt4 = preparedStatement.executeUpdate();
+                //ランダム表示
+                int num = new Random().nextInt(count);
+                Integer i = Integer.valueOf(num);
+                String str = i.toString();
+
+                // DBに接続
+                connection = DBManager.getConnection();
+                // ステートメントを作成
+                preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_OMIKUJI);
+                //入力値をバインド
+                preparedStatement.setString(1, str);
+                // SQL文を実行
+                ResultSet resultSet2 = null;
+                resultSet2 = preparedStatement.executeQuery();
+
+                //resultsetから値の取り出し方
+                while (resultSet2.next()) {
+                    omikuji = getInstance(resultSet2.getString("unsei_name"));
+                    omikuji.setUnsei();
+                    omikuji.omikujiId = str;
+                    omikuji.negaigoto = resultSet2.getString("negaigoto");
+                    omikuji.akinai = resultSet2.getString("akinai");
+                    omikuji.gakumon = resultSet2.getString("gakumon");
+                    omikuji.updater = resultSet2.getString("updater");
+                    omikuji.updatedDate = resultSet2.getTimestamp("updated_date");
+                    omikuji.creator = resultSet2.getString("creator");
+                    omikuji.createdDate = resultSet2.getTimestamp("created_date");
+                }
+
+                // DBに接続
+                connection = DBManager.getConnection();
+                // ステートメントを作成
+                preparedStatement = connection.prepareStatement(ConstantSQL.SQL_INSERT_RESULT);
+                //入力値をバインド
+                //getを使う
+                preparedStatement.setString(1, uranaiDate);
+                preparedStatement.setString(2, birthday);
+                preparedStatement.setString(3, omikuji.omikujiId);
+                preparedStatement.setString(4, omikuji.updater);
+                preparedStatement.setTimestamp(5, omikuji.updatedDate);
+                preparedStatement.setString(6, omikuji.creator);
+                preparedStatement.setTimestamp(7, omikuji.createdDate);
+
+                // SQL文を実行
+                int cnt4 = preparedStatement.executeUpdate();
+        }
 
                 //結果を出力
                 System.out.println(omikuji.disp());
                 //            return;
-                }
-            }
+
+        }
 
         catch (Exception e) {
             e.printStackTrace();
         }
         finally {
-                // ResultSetをクローズ
-                DBManager.close(resultSet);
-                // Statementをクローズ
-                DBManager.close(preparedStatement);
-                // DBとの接続を切断
-                DBManager.close(connection);
+            // ResultSetをクローズ
+            DBManager.close(resultSet);
+            // Statementをクローズ
+            DBManager.close(preparedStatement);
+            // DBとの接続を切断
+            DBManager.close(connection);
         }
     }
 
