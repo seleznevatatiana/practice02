@@ -19,73 +19,47 @@ public class Main {
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
 
+        //誕生日を入力する
         System.out.print("誕生日を入力してください：");
         //入力準備
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         //入力値を読み込む
         String birthday = reader.readLine();
+        //誕生日の形式が正しいかどうかをチェックする
         boolean check;
         CheckBirthday checkBirthday = new CheckBirthday();
         check = checkBirthday.checkBirthday(birthday);
+        //誕生日の形式が間違っている場合
         if (!check) {
-            System.out.println("正しい形式で誕生日を入力してください。");//繰り返しの処理while
-            return;
+            System.out.println("正しい形式で誕生日を入力してください。");
+            System.out.print("誕生日を入力してください：");
+            //入力準備
+            reader = new BufferedReader(new InputStreamReader(System.in));
+            //入力値を読み込む
+            birthday = reader.readLine();
         }
 
+        //占い日を指定
         Date date = new Date(); // 今日の日付
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String uranaiDate = dateFormat.format(date);
 
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-       //Resultテーブルから誕生日と占い日が一致する場合
-        // DBに接続
-        connection = DBManager.getConnection();
-        // ステートメントを作成
-        preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_FROM_RESULT);
-        //入力値をバインド
-        preparedStatement.setString(1, birthday);
-        preparedStatement.setString(2, uranaiDate);
-        // SQL文を実行
-        ResultSet rs = null;
-        rs = preparedStatement.executeQuery();
-        if (rs == null) {
-            System.out.println("rsがnullです");
-        }
+        //omikujiIdの宣言
         String omikujiId = "";
 
-        while (rs.next()) {
-        omikujiId = rs.getString("omikuji_id");
-        }
+     // 結果テーブルからデータを取り出す
+        db.DBController.selectFromResult(birthday, uranaiDate, omikujiId);
 
         Omikuji omikuji = null;
-
-        if (omikujiId != null) {
-
-            // ステートメントを作成
-            preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_FROM_OMIKUJI);
-            //入力値をバインド
-            preparedStatement.setString(1, omikujiId);
-            // SQL文を実行
-            ResultSet rs2 = null;
-            rs2 = preparedStatement.executeQuery();
-
-            //resultsetから値の取り出し方
-            while (rs2.next()) {
-                omikuji = getInstance(rs2.getString("unsei_name"));
-                omikuji.setUnsei();
-                omikuji.setOmikujiId(omikujiId);
-                omikuji.setNegaigoto(rs2.getString("negaigoto"));
-                omikuji.setAkinai(rs2.getString("akinai"));
-                omikuji.setGakumon(rs2.getString("gakumon"));
-            }
-        }
 
         //ファイル読み込みで使用する３つのクラス
         FileInputStream fi = null;
         InputStreamReader is = null;
         BufferedReader br = null;
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
 
@@ -113,19 +87,6 @@ public class Main {
                 while ((line = br.readLine()) != null) {
                     // lineをカンマで分割し、配列dataに設定
                     data = line.split(",");
-
-//                    omikuji = getInstance(data[0]);
-//
-//                    // 要素の追加
-//                    omikuji.setUnsei();
-//                    omikuji.setUnseiId(data[1]);
-//                    omikuji.setOmikujiId(data[2]);
-//                    omikuji.setNegaigoto(data[3]);
-//                    omikuji.setAkinai(data[4]);
-//                    omikuji.setGakumon(data[5]);
-//
-//                    // Timestampオブジェクト生成
-//                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
                     // DBに接続
                     connection = DBManager.getConnection();
@@ -156,27 +117,27 @@ public class Main {
 
                 //ランダム表示
                 int num = new Random().nextInt(count + 1);
-                String str = Integer.toString(num);
+                omikujiId = Integer.toString(num);
+            }
 
-                // DBに接続
-                connection = DBManager.getConnection();
-                // ステートメントを作成
-                preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_OMIKUJI);
-                //入力値をバインド
-                preparedStatement.setString(1, str);
-                // SQL文を実行
-                ResultSet resultSet2 = null;
-                resultSet2 = preparedStatement.executeQuery();
+            // DBに接続
+            connection = DBManager.getConnection();
+            // ステートメントを作成
+            preparedStatement = connection.prepareStatement(ConstantSQL.SQL_SELECT_OMIKUJI);
+            //入力値をバインド
+            preparedStatement.setString(1, omikujiId);
+            // SQL文を実行
+            ResultSet resultSet2 = null;
+            resultSet2 = preparedStatement.executeQuery();
 
-                //resultsetから値の取り出し方
-                while (resultSet2.next()) {
-                    omikuji = getInstance(resultSet2.getString("unsei_name"));
-                    omikuji.setUnsei();
-                    omikuji.setOmikujiId(str);
-                    omikuji.setNegaigoto(resultSet2.getString("negaigoto"));//setterを利用して書き換える
-                    omikuji.akinai = resultSet2.getString("akinai");
-                    omikuji.gakumon = resultSet2.getString("gakumon");
-                }
+            //resultsetから値の取り出し方
+            while (resultSet2.next()) {
+                omikuji = getInstance(resultSet2.getString("unsei_name"));
+                omikuji.setUnsei();
+                omikuji.setOmikujiId(omikujiId);
+                omikuji.setNegaigoto(resultSet2.getString("negaigoto"));//setterを利用して書き換える
+                omikuji.akinai = resultSet2.getString("akinai");
+                omikuji.gakumon = resultSet2.getString("gakumon");
 
                 // DBに接続
                 connection = DBManager.getConnection();
@@ -192,11 +153,11 @@ public class Main {
 
                 // SQL文を実行
                 int cnt4 = preparedStatement.executeUpdate();
-        }
+            }
 
-                //結果を出力
-                System.out.println(omikuji.disp());
-                //            return;
+            //結果を出力
+            System.out.println(omikuji.disp());
+            //            return;
 
         }
 
